@@ -73,3 +73,30 @@ NEXTAUTH_URL="http://localhost:3000"
 ```
 
 Note: drizzle-kit reads from `.env` (not `.env.local`).
+
+## UI Components
+
+### Interactive States Pattern
+All UI components include hover, focus, and active states. When adding new components:
+
+```typescript
+// Use transition-all duration-200 for smooth animations
+className="transition-all duration-200 ease-out"
+
+// Buttons use scale on active
+className="active:scale-[0.98]"
+
+// Cards use elevation and translate on hover
+className="hover:shadow-xl hover:-translate-y-1"
+
+// Use group for parent-child hover effects
+<div className="group">
+  <span className="group-hover:text-blue-600">...</span>
+</div>
+```
+
+### Component Files
+- `src/components/ui/button.tsx` - Button with variants (default, destructive, outline, secondary, ghost, link)
+- `src/components/ui/input.tsx` - Input with hover and focus states
+- `src/components/ui/card.tsx` - Card with transition support
+- `src/components/properties/PropertyCard.tsx` - Property listing card with image zoom effect

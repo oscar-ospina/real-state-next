@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RealState
 
-## Getting Started
+Aplicación de arriendo de propiedades inmobiliarias (estilo Zillow) para Colombia. Conecta arrendadores con arrendatarios de forma fácil y segura.
 
-First, run the development server:
+## Stack Tecnológico
+
+- **Framework**: Next.js 16 con App Router y React 19
+- **Base de datos**: PostgreSQL con Drizzle ORM
+- **Autenticación**: NextAuth v5 (beta) con credenciales
+- **UI**: Tailwind CSS 4 + shadcn/ui
+- **Validación**: Zod
+
+## Inicio Rápido
+
+### 1. Instalar dependencias
+
+```bash
+npm install
+```
+
+### 2. Configurar variables de entorno
+
+Crear archivo `.env`:
+
+```env
+DATABASE_URL="postgresql://realstate:realstate123@localhost:5433/realstate"
+AUTH_SECRET="tu-clave-secreta"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+### 3. Iniciar PostgreSQL
+
+```bash
+docker-compose up -d
+```
+
+### 4. Inicializar base de datos
+
+```bash
+npm run db:push
+```
+
+### 5. Ejecutar servidor de desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts Disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run lint` | Ejecutar ESLint |
+| `npm run db:push` | Push de schema a BD |
+| `npm run db:generate` | Generar migraciones |
+| `npm run db:studio` | Abrir Drizzle Studio |
 
-## Learn More
+## Características
 
-To learn more about Next.js, take a look at the following resources:
+- Búsqueda avanzada de propiedades
+- Sistema de roles (arrendador/arrendatario)
+- Gestión de propiedades con imágenes
+- UI responsiva con estados interactivos (hover, focus, active)
+- Modo oscuro (próximamente)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estructura del Proyecto
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/
+│   ├── (auth)/          # Páginas de login y registro
+│   ├── (main)/          # Rutas protegidas
+│   └── api/             # API routes
+├── components/
+│   ├── ui/              # Componentes shadcn/ui
+│   └── properties/      # Componentes de propiedades
+├── lib/
+│   ├── db/              # Schema y cliente Drizzle
+│   └── auth.ts          # Configuración NextAuth
+└── types/               # Definiciones TypeScript
+```
 
-## Deploy on Vercel
+## UI/UX
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Los componentes incluyen estados interactivos mejorados:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Botones**: Hover con cambio de color y sombra, estado active con scale
+- **Inputs**: Hover con borde resaltado, focus con ring y sombra
+- **Cards**: Transiciones suaves, efecto de elevación en hover
+- **PropertyCard**: Imagen con zoom, título con color en hover, badge animado
