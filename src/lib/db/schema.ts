@@ -12,7 +12,7 @@ import {
 import { relations } from "drizzle-orm";
 
 // Enums
-export const userRoleEnum = pgEnum("user_role", ["landlord", "tenant"]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "landlord", "tenant"]);
 export const propertyTypeEnum = pgEnum("property_type", [
   "apartment",
   "house",

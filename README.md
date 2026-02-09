@@ -38,6 +38,7 @@ docker-compose up -d
 
 ```bash
 npm run db:push
+npm run db:seed    # Crear usuarios de prueba
 ```
 
 ### 5. Ejecutar servidor de desarrollo
@@ -58,6 +59,14 @@ Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 | `npm run db:push` | Push de schema a BD |
 | `npm run db:generate` | Generar migraciones |
 | `npm run db:studio` | Abrir Drizzle Studio |
+| `npm run db:seed` | Crear usuarios de prueba |
+
+## Usuarios de Prueba
+
+| Email | Contraseña | Roles |
+|-------|------------|-------|
+| `admin@realstate.com` | `admin123` | admin, landlord |
+| `usuario@realstate.com` | `user123` | tenant |
 
 ## Características
 

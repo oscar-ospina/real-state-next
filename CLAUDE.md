@@ -18,6 +18,7 @@ npm run lint             # Run ESLint
 npm run db:push          # Push schema changes to DB
 npm run db:generate      # Generate migration files
 npm run db:studio        # Open Drizzle Studio
+npm run db:seed          # Create test users (admin + regular)
 
 # Docker
 docker-compose up -d     # Start PostgreSQL (port 5433)
@@ -41,14 +42,20 @@ docker-compose down      # Stop containers
 ### Key Files
 - `src/lib/db/schema.ts` - Drizzle schema (users, properties, property_images)
 - `src/lib/db/index.ts` - Database client export
+- `src/lib/db/seed.ts` - Database seed script (test users)
 - `src/lib/auth.ts` - NextAuth configuration and exports (auth, signIn, signOut)
 - `src/types/next-auth.d.ts` - Extended session types with roles
 
 ### Database Schema
 Three main tables with relations:
-- **users**: id, email, passwordHash, roles (array: landlord/tenant)
+- **users**: id, email, passwordHash, roles (array: admin/landlord/tenant)
 - **properties**: id, ownerId (FK), title, price, address, city, bedrooms, etc.
 - **property_images**: id, propertyId (FK), url, isPrimary, order
+
+### Seed Users
+Run `npm run db:seed` to create test users:
+- **Admin**: admin@realstate.com / admin123 (roles: admin, landlord)
+- **User**: usuario@realstate.com / user123 (roles: tenant)
 
 ### Auth Pattern
 ```typescript
@@ -58,9 +65,10 @@ const session = await auth();
 ```
 
 ### Role System
-Users can have multiple roles simultaneously (landlord AND tenant). Check with:
+Users can have multiple roles simultaneously. Available roles: `admin`, `landlord`, `tenant`. Check with:
 ```typescript
-session.user.roles?.includes("landlord")
+session.user.roles?.includes("admin")    // Check if admin
+session.user.roles?.includes("landlord") // Check if landlord
 ```
 
 ## Environment Variables
