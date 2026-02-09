@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { propertyTypeLabels } from "@/lib/validations/property";
+import { Header } from "@/components/layout/Header";
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
@@ -47,24 +48,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              RealState
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/properties">
-                <Button variant="ghost">Ver Propiedades</Button>
-              </Link>
-              <Link href="/login">
-                <Button>Iniciar Sesion</Button>
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         {/* Back link */}

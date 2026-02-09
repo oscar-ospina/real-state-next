@@ -4,7 +4,7 @@ export const propertyFormSchema = z.object({
   title: z.string().min(5, "El titulo debe tener al menos 5 caracteres"),
   description: z.string().optional(),
   propertyType: z.enum(["apartment", "house", "room", "studio", "commercial"], {
-    required_error: "Selecciona un tipo de propiedad",
+    error: "Selecciona un tipo de propiedad",
   }),
   price: z.string().min(1, "El precio es requerido"),
   currency: z.string().default("COP"),

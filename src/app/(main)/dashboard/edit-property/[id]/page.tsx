@@ -4,8 +4,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { properties } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { Button } from "@/components/ui/button";
 import { PropertyForm } from "@/components/properties/PropertyForm";
+import { Header } from "@/components/layout/Header";
 
 interface EditPropertyPageProps {
   params: Promise<{ id: string }>;
@@ -59,22 +59,7 @@ export default async function EditPropertyPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              RealState
-            </Link>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-600">Hola, {session.user.name}</span>
-              <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">

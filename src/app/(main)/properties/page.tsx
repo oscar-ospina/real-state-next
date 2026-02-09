@@ -6,6 +6,7 @@ import { PropertyCard } from "@/components/properties/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Header } from "@/components/layout/Header";
 
 interface SearchParams {
   city?: string;
@@ -57,24 +58,7 @@ export default async function PropertiesPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              RealState
-            </Link>
-            <div className="flex gap-4">
-              <Link href="/login">
-                <Button variant="ghost">Iniciar Sesión</Button>
-              </Link>
-              <Link href="/register">
-                <Button>Registrarse</Button>
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Propiedades Disponibles</h1>

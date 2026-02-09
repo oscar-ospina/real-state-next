@@ -6,6 +6,7 @@ import { properties } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Header } from "@/components/layout/Header";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -26,24 +27,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              RealState
-            </Link>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-600">Hola, {session.user.name}</span>
-              <form action="/api/auth/signout" method="POST">
-                <Button variant="ghost" type="submit">
-                  Cerrar Sesión
-                </Button>
-              </form>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">

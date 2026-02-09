@@ -105,11 +105,18 @@ className="hover:shadow-xl hover:-translate-y-1"
 ```
 
 ### Component Files
+- `src/components/layout/Header.tsx` - Shared sticky header (shows email when logged in, login/register when not)
 - `src/components/ui/button.tsx` - Button with variants (default, destructive, outline, secondary, ghost, link)
 - `src/components/ui/input.tsx` - Input with hover and focus states
 - `src/components/ui/card.tsx` - Card with transition support
 - `src/components/properties/PropertyCard.tsx` - Property listing card with image zoom effect
 - `src/components/properties/PropertyForm.tsx` - Form for creating new properties (landlord only)
+
+### Layout Pattern
+All pages use the shared `<Header />` component which:
+- Is sticky at the top (`sticky top-0 z-50`)
+- Shows user email + Dashboard link + Cerrar Sesion when logged in
+- Shows Iniciar Sesion + Registrarse when not logged in
 
 ### Property Management
 Landlords can manage properties:
