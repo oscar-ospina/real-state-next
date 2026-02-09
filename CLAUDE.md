@@ -44,6 +44,7 @@ docker-compose down      # Stop containers
 - `src/lib/db/index.ts` - Database client export
 - `src/lib/db/seed.ts` - Database seed script (test users)
 - `src/lib/auth.ts` - NextAuth configuration and exports (auth, signIn, signOut)
+- `src/lib/validations/property.ts` - Zod schema for property form validation
 - `src/types/next-auth.d.ts` - Extended session types with roles
 
 ### Database Schema
@@ -108,3 +109,11 @@ className="hover:shadow-xl hover:-translate-y-1"
 - `src/components/ui/input.tsx` - Input with hover and focus states
 - `src/components/ui/card.tsx` - Card with transition support
 - `src/components/properties/PropertyCard.tsx` - Property listing card with image zoom effect
+- `src/components/properties/PropertyForm.tsx` - Form for creating new properties (landlord only)
+
+### Property Publishing
+Landlords can publish properties at `/dashboard/new-property`:
+- Server-side auth and role verification
+- Client-side form with Zod validation
+- POST to `/api/properties` (existing endpoint)
+- Redirect to dashboard on success
