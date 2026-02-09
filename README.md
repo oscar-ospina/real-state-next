@@ -73,7 +73,8 @@ Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 - Búsqueda avanzada de propiedades
 - Sistema de roles (arrendador/arrendatario)
 - Publicación de propiedades (landlords)
-- Gestión de propiedades con imágenes
+- Edición y gestión de propiedades
+- Vista detallada de propiedades
 - UI responsiva con estados interactivos (hover, focus, active)
 - Modo oscuro (próximamente)
 

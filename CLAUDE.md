@@ -111,9 +111,25 @@ className="hover:shadow-xl hover:-translate-y-1"
 - `src/components/properties/PropertyCard.tsx` - Property listing card with image zoom effect
 - `src/components/properties/PropertyForm.tsx` - Form for creating new properties (landlord only)
 
-### Property Publishing
-Landlords can publish properties at `/dashboard/new-property`:
+### Property Management
+Landlords can manage properties:
+
+**Create**: `/dashboard/new-property`
 - Server-side auth and role verification
 - Client-side form with Zod validation
-- POST to `/api/properties` (existing endpoint)
-- Redirect to dashboard on success
+- POST to `/api/properties`
+
+**Edit**: `/dashboard/edit-property/[id]`
+- Only owner or admin can edit
+- Pre-populated form with existing data
+- PUT to `/api/properties/[id]`
+
+**View**: `/property/[id]`
+- Public page with property details
+- Image gallery, specs, owner info
+- Contact and schedule visit buttons
+
+**API**: `/api/properties/[id]`
+- GET: Fetch single property with images and owner
+- PUT: Update property (owner/admin only)
+- DELETE: Remove property (owner/admin only)

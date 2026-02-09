@@ -19,13 +19,42 @@ import {
   propertyTypeLabels,
 } from "@/lib/validations/property";
 
-export function PropertyForm() {
+interface PropertyData {
+  id?: string;
+  title: string;
+  description?: string | null;
+  propertyType: string;
+  price: string;
+  currency: string;
+  address: string;
+  city: string;
+  neighborhood?: string | null;
+  bedrooms: number;
+  bathrooms: number;
+  areaSqm?: string | null;
+  isFurnished: boolean;
+  isAvailable?: boolean;
+}
+
+interface PropertyFormProps {
+  initialData?: PropertyData;
+  mode?: "create" | "edit";
+}
+
+export function PropertyForm({ initialData, mode = "create" }: PropertyFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [propertyType, setPropertyType] = useState("apartment");
-  const [currency, setCurrency] = useState("COP");
+  const [propertyType, setPropertyType] = useState(
+    initialData?.propertyType || "apartment"
+  );
+  const [currency, setCurrency] = useState(initialData?.currency || "COP");
+  const [isAvailable, setIsAvailable] = useState(
+    initialData?.isAvailable ?? true
+  );
+
+  const isEditMode = mode === "edit";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,6 +77,7 @@ export function PropertyForm() {
       bathrooms: parseInt(formData.get("bathrooms") as string) || 1,
       areaSqm: (formData.get("areaSqm") as string) || undefined,
       isFurnished: formData.get("isFurnished") === "on",
+      ...(isEditMode && { isAvailable }),
     };
 
     // Validacion client-side
@@ -65,15 +95,23 @@ export function PropertyForm() {
 
     // Enviar al API
     try {
-      const res = await fetch("/api/properties", {
-        method: "POST",
+      const url = isEditMode
+        ? `/api/properties/${initialData?.id}`
+        : "/api/properties";
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(result.data),
+        body: JSON.stringify({ ...result.data, ...(isEditMode && { isAvailable }) }),
       });
 
       if (!res.ok) {
         const responseData = await res.json();
-        setError(responseData.error || "Error al crear la propiedad");
+        setError(
+          responseData.error ||
+            `Error al ${isEditMode ? "actualizar" : "crear"} la propiedad`
+        );
         setLoading(false);
         return;
       }
@@ -108,6 +146,7 @@ export function PropertyForm() {
               name="title"
               placeholder="Ej: Apartamento moderno en Chapinero"
               required
+              defaultValue={initialData?.title}
               className={fieldErrors.title ? "border-red-500" : ""}
             />
             {fieldErrors.title && (
@@ -122,6 +161,7 @@ export function PropertyForm() {
               name="description"
               placeholder="Describe las caracteristicas de tu propiedad..."
               rows={4}
+              defaultValue={initialData?.description || ""}
             />
           </div>
 
@@ -147,6 +187,7 @@ export function PropertyForm() {
                 <input
                   type="checkbox"
                   name="isFurnished"
+                  defaultChecked={initialData?.isFurnished}
                   className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
                 />
                 <span className="text-sm font-medium">Amoblado</span>
@@ -172,6 +213,7 @@ export function PropertyForm() {
                 placeholder="1500000"
                 required
                 min="0"
+                defaultValue={initialData?.price}
                 className={fieldErrors.price ? "border-red-500" : ""}
               />
               {fieldErrors.price && (
@@ -201,7 +243,7 @@ export function PropertyForm() {
                 name="bedrooms"
                 type="number"
                 min="0"
-                defaultValue="1"
+                defaultValue={initialData?.bedrooms ?? 1}
                 required
               />
             </div>
@@ -213,7 +255,7 @@ export function PropertyForm() {
                 name="bathrooms"
                 type="number"
                 min="1"
-                defaultValue="1"
+                defaultValue={initialData?.bathrooms ?? 1}
                 required
               />
             </div>
@@ -226,6 +268,7 @@ export function PropertyForm() {
                 type="number"
                 placeholder="80"
                 min="1"
+                defaultValue={initialData?.areaSqm || ""}
               />
             </div>
           </div>
@@ -245,6 +288,7 @@ export function PropertyForm() {
               name="address"
               placeholder="Calle 100 # 15-20"
               required
+              defaultValue={initialData?.address}
               className={fieldErrors.address ? "border-red-500" : ""}
             />
             {fieldErrors.address && (
@@ -260,6 +304,7 @@ export function PropertyForm() {
                 name="city"
                 placeholder="Bogota"
                 required
+                defaultValue={initialData?.city}
                 className={fieldErrors.city ? "border-red-500" : ""}
               />
               {fieldErrors.city && (
@@ -273,11 +318,43 @@ export function PropertyForm() {
                 id="neighborhood"
                 name="neighborhood"
                 placeholder="Chapinero"
+                defaultValue={initialData?.neighborhood || ""}
               />
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Seccion: Estado (solo en modo edicion) */}
+      {isEditMode && (
+        <Card className="transition-all duration-200 hover:shadow-md">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Estado de la Propiedad</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isAvailable}
+                  onChange={(e) => setIsAvailable(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+                />
+                <span className="text-sm font-medium">Disponible para arriendo</span>
+              </label>
+              <span
+                className={`text-xs px-2 py-1 rounded ${
+                  isAvailable
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {isAvailable ? "Visible" : "Oculta"}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Botones de accion */}
       <div className="flex gap-4 justify-end pt-4">
@@ -290,7 +367,13 @@ export function PropertyForm() {
           Cancelar
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading ? "Publicando..." : "Publicar Propiedad"}
+          {loading
+            ? isEditMode
+              ? "Guardando..."
+              : "Publicando..."
+            : isEditMode
+            ? "Guardar Cambios"
+            : "Publicar Propiedad"}
         </Button>
       </div>
     </form>
