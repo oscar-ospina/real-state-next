@@ -3,10 +3,13 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { properties } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { propertyTypeLabels } from "@/lib/validations/property";
 import { Header } from "@/components/layout/Header";
+import { ContactSection } from "@/components/properties/ContactSection";
+import { RentButton } from "@/components/rent/RentButton";
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
@@ -14,6 +17,7 @@ interface PropertyPageProps {
 
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params;
+  const session = await auth();
 
   const property = await db.query.properties.findFirst({
     where: eq(properties.id, id),
@@ -26,6 +30,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           id: true,
           name: true,
           email: true,
+          phone: true,
         },
       },
     },
@@ -45,6 +50,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   const primaryImage =
     property.images.find((img) => img.isPrimary) || property.images[0];
+
+  // Variables para RentButton
+  const isAuthenticated = !!session?.user;
+  const isTenant = session?.user?.roles?.includes("tenant") ?? false;
+  const isOwner = property.ownerId === session?.user?.id;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,7 +142,8 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                     {property.title}
                   </h1>
                   <p className="text-gray-500">
-                    {property.address}, {property.neighborhood && `${property.neighborhood}, `}
+                    {property.address},{" "}
+                    {property.neighborhood && `${property.neighborhood}, `}
                     {property.city}
                   </p>
                 </div>
@@ -162,7 +173,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                     <p className="text-2xl font-bold text-gray-900">
                       {property.bathrooms}
                     </p>
-                    <p className="text-sm text-gray-500">Banos</p>
+                    <p className="text-sm text-gray-500">Baños</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-gray-900">
@@ -197,12 +208,24 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   </p>
                 </div>
 
-                <Button className="w-full mb-3" size="lg">
-                  Contactar
-                </Button>
-                <Button variant="outline" className="w-full" size="lg">
+                <ContactSection
+                  ownerName={property.owner?.name || "Usuario"}
+                  ownerEmail={property.owner?.email || ""}
+                  ownerPhone={property.owner?.phone}
+                  propertyTitle={property.title}
+                />
+                <Button variant="outline" className="w-full mt-3" size="lg">
                   Agendar visita
                 </Button>
+                <div className="mt-3">
+                  <RentButton
+                    propertyId={property.id}
+                    isAvailable={property.isAvailable}
+                    isAuthenticated={isAuthenticated}
+                    isTenant={isTenant}
+                    isOwner={isOwner}
+                  />
+                </div>
 
                 {/* Owner info */}
                 <div className="mt-6 pt-6 border-t">

@@ -41,17 +41,20 @@ interface PropertyFormProps {
   mode?: "create" | "edit";
 }
 
-export function PropertyForm({ initialData, mode = "create" }: PropertyFormProps) {
+export function PropertyForm({
+  initialData,
+  mode = "create",
+}: PropertyFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [propertyType, setPropertyType] = useState(
-    initialData?.propertyType || "apartment"
+    initialData?.propertyType || "apartment",
   );
   const [currency, setCurrency] = useState(initialData?.currency || "COP");
   const [isAvailable, setIsAvailable] = useState(
-    initialData?.isAvailable ?? true
+    initialData?.isAvailable ?? true,
   );
 
   const isEditMode = mode === "edit";
@@ -103,14 +106,17 @@ export function PropertyForm({ initialData, mode = "create" }: PropertyFormProps
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...result.data, ...(isEditMode && { isAvailable }) }),
+        body: JSON.stringify({
+          ...result.data,
+          ...(isEditMode && { isAvailable }),
+        }),
       });
 
       if (!res.ok) {
         const responseData = await res.json();
         setError(
           responseData.error ||
-            `Error al ${isEditMode ? "actualizar" : "crear"} la propiedad`
+            `Error al ${isEditMode ? "actualizar" : "crear"} la propiedad`,
         );
         setLoading(false);
         return;
@@ -249,7 +255,7 @@ export function PropertyForm({ initialData, mode = "create" }: PropertyFormProps
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bathrooms">Banos *</Label>
+              <Label htmlFor="bathrooms">Baños *</Label>
               <Input
                 id="bathrooms"
                 name="bathrooms"
@@ -340,7 +346,9 @@ export function PropertyForm({ initialData, mode = "create" }: PropertyFormProps
                   onChange={(e) => setIsAvailable(e.target.checked)}
                   className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
                 />
-                <span className="text-sm font-medium">Disponible para arriendo</span>
+                <span className="text-sm font-medium">
+                  Disponible para arriendo
+                </span>
               </label>
               <span
                 className={`text-xs px-2 py-1 rounded ${
@@ -372,8 +380,8 @@ export function PropertyForm({ initialData, mode = "create" }: PropertyFormProps
               ? "Guardando..."
               : "Publicando..."
             : isEditMode
-            ? "Guardar Cambios"
-            : "Publicar Propiedad"}
+              ? "Guardar Cambios"
+              : "Publicar Propiedad"}
         </Button>
       </div>
     </form>

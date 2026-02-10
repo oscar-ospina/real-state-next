@@ -2,11 +2,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { properties } from "@/lib/db/schema";
+import { properties, leases } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/layout/Header";
+import { LeaseRequestCard } from "@/components/rent/LeaseRequestCard";
+import { MyLeaseCard } from "@/components/rent/MyLeaseCard";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -21,6 +23,53 @@ export default async function DashboardPage() {
       images: true,
     },
     orderBy: (properties, { desc }) => [desc(properties.createdAt)],
+  });
+
+  // Solicitudes de arrendamiento pendientes (como landlord)
+  const pendingLeases = await db.query.leases.findMany({
+    where: eq(leases.landlordId, session.user.id),
+    with: {
+      property: {
+        columns: {
+          id: true,
+          title: true,
+          address: true,
+          city: true,
+        },
+      },
+      tenant: {
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: (leases, { desc }) => [desc(leases.createdAt)],
+  });
+
+  const pendingApprovalLeases = pendingLeases.filter(
+    (l) => l.status === "pending_landlord_approval"
+  );
+
+  // Mis arrendamientos (como tenant)
+  const myLeases = await db.query.leases.findMany({
+    where: eq(leases.tenantId, session.user.id),
+    with: {
+      property: {
+        with: {
+          images: true,
+        },
+      },
+      landlord: {
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: (leases, { desc }) => [desc(leases.createdAt)],
   });
 
   const isLandlord = session.user.roles?.includes("landlord");
@@ -40,7 +89,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm text-gray-500">Mis Propiedades</CardTitle>
@@ -59,6 +108,16 @@ export default async function DashboardPage() {
               </p>
             </CardContent>
           </Card>
+          <Card className={pendingApprovalLeases.length > 0 ? "border-amber-300 bg-amber-50" : ""}>
+            <CardHeader>
+              <CardTitle className="text-sm text-gray-500">Solicitudes Pendientes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className={`text-3xl font-bold ${pendingApprovalLeases.length > 0 ? "text-amber-600" : ""}`}>
+                {pendingApprovalLeases.length}
+              </p>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle className="text-sm text-gray-500">Rol</CardTitle>
@@ -70,6 +129,18 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* My Leases as Tenant */}
+        {myLeases.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Mis Arrendamientos</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {myLeases.map((lease) => (
+                <MyLeaseCard key={lease.id} lease={lease} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Become Landlord CTA */}
         {!isLandlord && (
@@ -86,6 +157,23 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Pending Lease Requests */}
+        {isLandlord && pendingApprovalLeases.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              Solicitudes de Arrendamiento
+              <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">
+                {pendingApprovalLeases.length} pendiente{pendingApprovalLeases.length > 1 ? "s" : ""}
+              </span>
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pendingApprovalLeases.map((lease) => (
+                <LeaseRequestCard key={lease.id} lease={lease} />
+              ))}
+            </div>
+          </div>
         )}
 
         {/* My Properties */}

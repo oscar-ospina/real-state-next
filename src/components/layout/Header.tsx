@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { SignOutButton } from "./SignOutButton";
 
 export async function Header() {
   const session = await auth();
@@ -23,11 +24,7 @@ export async function Header() {
                     Dashboard
                   </Button>
                 </Link>
-                <form action="/api/auth/signout" method="POST">
-                  <Button variant="outline" size="sm" type="submit">
-                    Cerrar Sesión
-                  </Button>
-                </form>
+                <SignOutButton />
               </>
             ) : (
               <>
