@@ -103,3 +103,7 @@ Los componentes incluyen estados interactivos mejorados:
 - **Inputs**: Hover con borde resaltado, focus con ring y sombra
 - **Cards**: Transiciones suaves, efecto de elevación en hover
 - **PropertyCard**: Imagen con zoom, título con color en hover, badge animado
+
+## Licencia
+
+MIT
