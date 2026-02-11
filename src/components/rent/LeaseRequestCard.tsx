@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ApprovalFeePaymentButton } from "@/components/payments/ApprovalFeePaymentButton";
 import { PaymentRequiredBadge } from "@/components/payments/PaymentRequiredBadge";
 import { PaymentStatusChecker } from "@/components/payments/PaymentStatusChecker";
+import { LandlordContractViewer } from "@/components/rent/LandlordContractViewer";
 
 interface LeaseRequestCardProps {
   lease: {
@@ -183,13 +184,9 @@ export function LeaseRequestCard({ lease }: LeaseRequestCardProps) {
         </div>
 
         {/* Ver contrato */}
-        <Link
-          href={`/api/rent/${lease.id}/contract`}
-          target="_blank"
-          className="block text-center text-sm text-blue-600 hover:underline mt-2"
-        >
-          Ver contrato
-        </Link>
+        <div className="mt-2">
+          <LandlordContractViewer leaseId={lease.id} />
+        </div>
       </CardContent>
     </Card>
   );
