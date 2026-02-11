@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ApprovalFeePaymentButton } from "@/components/payments/ApprovalFeePaymentButton";
+import { PaymentRequiredBadge } from "@/components/payments/PaymentRequiredBadge";
+import { PaymentStatusChecker } from "@/components/payments/PaymentStatusChecker";
 
 interface LeaseRequestCardProps {
   lease: {
@@ -23,6 +26,14 @@ interface LeaseRequestCardProps {
       name: string | null;
       email: string;
     };
+    approvalFee?: {
+      isPaid: boolean;
+      feeAmount: string;
+      payment: {
+        status: string;
+        wompiCheckoutUrl: string | null;
+      };
+    } | null;
   };
 }
 
@@ -119,6 +130,37 @@ export function LeaseRequestCard({ lease }: LeaseRequestCardProps) {
           </div>
         </div>
 
+        {/* Estado del pago */}
+        {!lease.approvalFee?.isPaid && (
+          <div className="mb-3">
+            <PaymentRequiredBadge
+              amount={lease.monthlyRent}
+              isPaid={false}
+            />
+            <div className="mt-3">
+              <ApprovalFeePaymentButton
+                leaseId={lease.id}
+                monthlyRent={lease.monthlyRent}
+                existingPayment={
+                  lease.approvalFee?.payment
+                    ? {
+                        checkoutUrl:
+                          lease.approvalFee.payment.wompiCheckoutUrl || "",
+                        status: lease.approvalFee.payment.status,
+                      }
+                    : null
+                }
+              />
+            </div>
+          </div>
+        )}
+
+        {lease.approvalFee?.isPaid && (
+          <div className="mb-3">
+            <PaymentStatusChecker leaseId={lease.id} />
+          </div>
+        )}
+
         {/* Acciones */}
         <div className="flex gap-2">
           <Button
@@ -134,7 +176,7 @@ export function LeaseRequestCard({ lease }: LeaseRequestCardProps) {
             size="sm"
             className="flex-1 bg-green-600 hover:bg-green-700"
             onClick={() => handleResponse("approve")}
-            disabled={loading !== null}
+            disabled={loading !== null || !lease.approvalFee?.isPaid}
           >
             {loading === "approve" ? "..." : "Aprobar"}
           </Button>

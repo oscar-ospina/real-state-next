@@ -44,6 +44,16 @@ export default async function DashboardPage() {
           email: true,
         },
       },
+      approvalFee: {
+        with: {
+          payment: {
+            columns: {
+              status: true,
+              wompiCheckoutUrl: true,
+            },
+          },
+        },
+      },
     },
     orderBy: (leases, { desc }) => [desc(leases.createdAt)],
   });

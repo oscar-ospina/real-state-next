@@ -31,6 +31,21 @@ export const leaseStatusEnum = pgEnum("lease_status", [
   "active",
   "completed",
 ]);
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pending",
+  "processing",
+  "approved",
+  "declined",
+  "voided",
+  "error",
+]);
+export const paymentMethodEnum = pgEnum("payment_method", [
+  "card",
+  "pse",
+  "nequi",
+  "bancolombia",
+  "cash",
+]);
 
 // Users table
 export const users = pgTable("users", {
@@ -144,6 +159,64 @@ export const otpCodes = pgTable("otp_codes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Payment transactions table
+export const paymentTransactions = pgTable("payment_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  wompiTransactionId: varchar("wompi_transaction_id", { length: 255 }).unique(),
+  wompiReference: varchar("wompi_reference", { length: 255 }).notNull().unique(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull().default("COP"),
+  status: paymentStatusEnum("status").notNull().default("pending"),
+  paymentMethod: paymentMethodEnum("payment_method"),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  wompiCheckoutUrl: varchar("wompi_checkout_url", { length: 500 }),
+  integritySignature: varchar("integrity_signature", { length: 64 }).notNull(),
+  paidAt: timestamp("paid_at"),
+  voidedAt: timestamp("voided_at"),
+  errorMessage: text("error_message"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Lease approval fees table
+export const leaseApprovalFees = pgTable("lease_approval_fees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  leaseId: uuid("lease_id")
+    .notNull()
+    .unique()
+    .references(() => leases.id, { onDelete: "cascade" }),
+  paymentTransactionId: uuid("payment_transaction_id")
+    .notNull()
+    .references(() => paymentTransactions.id, { onDelete: "cascade" }),
+  monthlyRent: decimal("monthly_rent", { precision: 12, scale: 2 }).notNull(),
+  feePercentage: decimal("fee_percentage", { precision: 5, scale: 2 }).notNull().default("5.00"),
+  feeAmount: decimal("fee_amount", { precision: 12, scale: 2 }).notNull(),
+  isPaid: boolean("is_paid").notNull().default(false),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Webhook events table
+export const webhookEvents = pgTable("webhook_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventType: varchar("event_type", { length: 100 }).notNull(),
+  wompiEventId: varchar("wompi_event_id", { length: 255 }),
+  receivedChecksum: varchar("received_checksum", { length: 64 }).notNull(),
+  calculatedChecksum: varchar("calculated_checksum", { length: 64 }).notNull(),
+  isValid: boolean("is_valid").notNull(),
+  payload: text("payload").notNull(),
+  processed: boolean("processed").notNull().default(false),
+  processedAt: timestamp("processed_at"),
+  errorMessage: text("error_message"),
+  paymentTransactionId: uuid("payment_transaction_id")
+    .references(() => paymentTransactions.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   properties: many(properties),
@@ -190,6 +263,10 @@ export const leasesRelations = relations(leases, ({ one }) => ({
     references: [users.id],
     relationName: "landlord",
   }),
+  approvalFee: one(leaseApprovalFees, {
+    fields: [leases.id],
+    references: [leaseApprovalFees.leaseId],
+  }),
 }));
 
 export const otpCodesRelations = relations(otpCodes, ({ one }) => ({
@@ -200,6 +277,36 @@ export const otpCodesRelations = relations(otpCodes, ({ one }) => ({
   lease: one(leases, {
     fields: [otpCodes.leaseId],
     references: [leases.id],
+  }),
+}));
+
+export const paymentTransactionsRelations = relations(paymentTransactions, ({ one, many }) => ({
+  user: one(users, {
+    fields: [paymentTransactions.userId],
+    references: [users.id],
+  }),
+  leaseApprovalFee: one(leaseApprovalFees, {
+    fields: [paymentTransactions.id],
+    references: [leaseApprovalFees.paymentTransactionId],
+  }),
+  webhookEvents: many(webhookEvents),
+}));
+
+export const leaseApprovalFeesRelations = relations(leaseApprovalFees, ({ one }) => ({
+  lease: one(leases, {
+    fields: [leaseApprovalFees.leaseId],
+    references: [leases.id],
+  }),
+  payment: one(paymentTransactions, {
+    fields: [leaseApprovalFees.paymentTransactionId],
+    references: [paymentTransactions.id],
+  }),
+}));
+
+export const webhookEventsRelations = relations(webhookEvents, ({ one }) => ({
+  paymentTransaction: one(paymentTransactions, {
+    fields: [webhookEvents.paymentTransactionId],
+    references: [paymentTransactions.id],
   }),
 }));
 
@@ -216,3 +323,9 @@ export type Lease = typeof leases.$inferSelect;
 export type NewLease = typeof leases.$inferInsert;
 export type OtpCode = typeof otpCodes.$inferSelect;
 export type NewOtpCode = typeof otpCodes.$inferInsert;
+export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
+export type NewPaymentTransaction = typeof paymentTransactions.$inferInsert;
+export type LeaseApprovalFee = typeof leaseApprovalFees.$inferSelect;
+export type NewLeaseApprovalFee = typeof leaseApprovalFees.$inferInsert;
+export type WebhookEvent = typeof webhookEvents.$inferSelect;
+export type NewWebhookEvent = typeof webhookEvents.$inferInsert;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { leases } from "@/lib/db/schema";
+import { leases, leaseApprovalFees } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -57,6 +57,27 @@ export async function POST(
         { error: "Datos invalidos", details: parsed.error.flatten() },
         { status: 400 }
       );
+    }
+
+    // Check if payment is required and completed for approval
+    if (parsed.data.action === "approve") {
+      const approvalFee = await db.query.leaseApprovalFees.findFirst({
+        where: eq(leaseApprovalFees.leaseId, leaseId),
+        with: {
+          payment: true,
+        },
+      });
+
+      if (!approvalFee || !approvalFee.isPaid) {
+        return NextResponse.json(
+          {
+            error:
+              "Debes pagar la tarifa de aprobación antes de aprobar este contrato",
+            requiresPayment: true,
+          },
+          { status: 402 } // Payment Required
+        );
+      }
     }
 
     const newStatus = parsed.data.action === "approve" ? "approved" : "rejected";
