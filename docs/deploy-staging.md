@@ -9,6 +9,7 @@
    - Artifact Registry API
 
 3. **Permisos de Cloud Build:**
+
 ```bash
 PROJECT_ID=$(gcloud config get-value project)
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
@@ -26,6 +27,7 @@ gcloud iam service-accounts add-iam-policy-binding \
 ```
 
 4. **Artifact Registry repository:**
+
 ```bash
 gcloud artifacts repositories create real-state \
   --repository-format=docker \
@@ -36,6 +38,7 @@ gcloud artifacts repositories create real-state \
 ## Despliegue Manual
 
 ### Opción 1: Con variables en línea
+
 ```bash
 gcloud builds submit --config=cloudbuild.staging.yaml \
   --substitutions="\
@@ -44,6 +47,7 @@ _AUTH_SECRET=your-secret-key-min-32-chars"
 ```
 
 ### Opción 2: Desde archivo de variables (recomendado)
+
 ```bash
 # Crear archivo .env.staging (NO COMMITEAR)
 cat > .env.staging <<EOF
@@ -60,6 +64,7 @@ gcloud builds submit --config=cloudbuild.staging.yaml \
 ## Configurar Trigger Automático
 
 ### 1. Crear trigger en Cloud Build
+
 ```bash
 gcloud builds triggers create github \
   --name="deploy-staging" \
@@ -72,6 +77,7 @@ gcloud builds triggers create github \
 ### 2. Configurar variables en el trigger
 
 **Desde la consola de GCP:**
+
 1. Ir a Cloud Build > Triggers
 2. Seleccionar el trigger "deploy-staging"
 3. Editar > Substitution variables
@@ -80,6 +86,7 @@ gcloud builds triggers create github \
    - `_AUTH_SECRET`: `your-secret-key`
 
 **Desde CLI:**
+
 ```bash
 gcloud builds triggers update deploy-staging \
   --substitutions="\
@@ -89,13 +96,13 @@ _AUTH_SECRET=your-secret-key"
 
 ## Variables de Entorno
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `_REGION` | Región de GCP | `us-central1` |
-| `_SERVICE_NAME` | Nombre del servicio | `real-state-staging` |
-| `_REPOSITORY` | Artifact Registry repo | `real-state` |
+| Variable        | Descripción                  | Ejemplo                               |
+| --------------- | ---------------------------- | ------------------------------------- |
+| `_REGION`       | Región de GCP                | `us-east1`                            |
+| `_SERVICE_NAME` | Nombre del servicio          | `real-state-staging`                  |
+| `_REPOSITORY`   | Artifact Registry repo       | `real-state`                          |
 | `_DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `_AUTH_SECRET` | NextAuth secret (32+ chars) | `openssl rand -base64 32` |
+| `_AUTH_SECRET`  | NextAuth secret (32+ chars)  | `openssl rand -base64 32`             |
 
 ## Verificar Despliegue
 
@@ -117,6 +124,7 @@ gcloud run services describe real-state-staging \
 ## Troubleshooting
 
 ### Error: Permission denied
+
 ```bash
 # Verificar permisos de Cloud Build
 gcloud projects get-iam-policy $(gcloud config get-value project) \
@@ -125,12 +133,14 @@ gcloud projects get-iam-policy $(gcloud config get-value project) \
 ```
 
 ### Error: Service not found
+
 ```bash
 # Listar servicios de Cloud Run
 gcloud run services list --region=us-central1
 ```
 
 ### Error de conexión a base de datos
+
 - Verificar que la IP de Cloud Run esté permitida en PostgreSQL
 - Para Cloud SQL: usar Cloud SQL Proxy o conexión privada
 - Verificar formato del DATABASE_URL

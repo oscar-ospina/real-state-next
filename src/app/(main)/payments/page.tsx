@@ -1,3 +1,4 @@
+import React from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
@@ -57,7 +58,7 @@ export default async function PaymentsPage() {
 
   const statusConfig: Record<
     string,
-    { label: string; color: string; icon: JSX.Element }
+    { label: string; color: string; icon: React.ReactElement }
   > = {
     pending: {
       label: "Pendiente",

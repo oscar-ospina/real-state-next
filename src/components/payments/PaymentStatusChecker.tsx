@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, XCircle, Loader2, Clock } from "lucide-react";
 import { formatCOP } from "@/lib/utils/wompi";
@@ -63,7 +63,7 @@ export function PaymentStatusChecker({
     return null;
   }
 
-  const statusIcons: Record<string, JSX.Element> = {
+  const statusIcons: Record<string, React.ReactElement> = {
     approved: <CheckCircle className="w-5 h-5 text-green-600" />,
     pending: <Clock className="w-5 h-5 text-amber-600" />,
     processing: <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />,
