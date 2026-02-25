@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { properties, propertyImages } from "@/lib/db/schema";
@@ -7,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Header } from "@/components/layout/Header";
+
+export const metadata: Metadata = {
+  title: "Propiedades Disponibles",
+  description:
+    "Explora apartamentos, casas, habitaciones y estudios en arriendo en Colombia. Filtra por ciudad, precio y habitaciones.",
+};
 
 interface SearchParams {
   city?: string;

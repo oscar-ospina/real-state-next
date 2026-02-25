@@ -14,8 +14,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RealState - Encuentra tu próximo hogar",
-  description: "Plataforma de arrendamientos para encontrar o publicar propiedades",
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  title: {
+    default: "RealState - Encuentra tu próximo hogar",
+    template: "%s | RealState",
+  },
+  description:
+    "Plataforma de arrendamientos en Colombia. Encuentra apartamentos, casas y habitaciones en arriendo o publica tu propiedad.",
+  keywords: [
+    "arriendo",
+    "alquiler",
+    "apartamentos",
+    "casas",
+    "habitaciones",
+    "Colombia",
+    "arrendamiento",
+    "inmuebles",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "es_CO",
+    siteName: "RealState",
+    title: "RealState - Encuentra tu próximo hogar",
+    description:
+      "Plataforma de arrendamientos en Colombia. Encuentra apartamentos, casas y habitaciones en arriendo.",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

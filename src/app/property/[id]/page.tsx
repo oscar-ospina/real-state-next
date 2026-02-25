@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -13,6 +14,43 @@ import { RentButton } from "@/components/rent/RentButton";
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PropertyPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const property = await db.query.properties.findFirst({
+    where: eq(properties.id, id),
+    with: { images: true },
+  });
+
+  if (!property) {
+    return { title: "Propiedad no encontrada" };
+  }
+
+  const price = new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: property.currency,
+    minimumFractionDigits: 0,
+  }).format(Number(property.price));
+
+  const typeLabel =
+    propertyTypeLabels[property.propertyType] || property.propertyType;
+  const description = `${typeLabel} en ${property.city} - ${price}/mes. ${property.bedrooms} habitaciones, ${property.bathrooms} baños${property.areaSqm ? `, ${property.areaSqm} m²` : ""}.`;
+  const primaryImage =
+    property.images.find((img) => img.isPrimary) || property.images[0];
+
+  return {
+    title: property.title,
+    description,
+    openGraph: {
+      title: property.title,
+      description,
+      type: "article",
+      ...(primaryImage && { images: [{ url: primaryImage.url }] }),
+    },
+  };
 }
 
 export default async function PropertyPage({ params }: PropertyPageProps) {
@@ -56,8 +94,48 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
   const isTenant = session?.user?.roles?.includes("tenant") ?? false;
   const isOwner = property.ownerId === session?.user?.id;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: property.title,
+    description: property.description || undefined,
+    url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/property/${property.id}`,
+    ...(primaryImage && { image: primaryImage.url }),
+    datePosted: property.createdAt.toISOString(),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: property.address,
+      addressLocality: property.city,
+      addressCountry: "CO",
+      ...(property.neighborhood && {
+        addressRegion: property.neighborhood,
+      }),
+    },
+    offers: {
+      "@type": "Offer",
+      price: property.price,
+      priceCurrency: property.currency,
+      availability: property.isAvailable
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    },
+    numberOfRooms: property.bedrooms,
+    numberOfBathroomsTotal: property.bathrooms,
+    ...(property.areaSqm && {
+      floorSize: {
+        "@type": "QuantitativeValue",
+        value: Number(property.areaSqm),
+        unitCode: "MTK",
+      },
+    }),
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -114,7 +192,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               {/* Thumbnail gallery */}
               {property.images.length > 1 && (
                 <div className="p-4 flex gap-2 overflow-x-auto">
-                  {property.images.map((image) => (
+                  {property.images.map((image, index) => (
                     <div
                       key={image.id}
                       className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${
@@ -125,7 +203,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                     >
                       <img
                         src={image.url}
-                        alt=""
+                        alt={`${property.title} - foto ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
                     </div>

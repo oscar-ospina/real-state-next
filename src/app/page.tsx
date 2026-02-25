@@ -3,8 +3,40 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 
 export default function Home() {
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "RealState",
+    url: baseUrl,
+    description:
+      "Plataforma de arrendamientos en Colombia. Conectamos arrendadores con arrendatarios de forma fácil y segura.",
+  };
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "RealState",
+    url: baseUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${baseUrl}/properties?city={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([organizationJsonLd, websiteJsonLd]),
+        }}
+      />
       <Header />
 
       {/* Hero Section */}
