@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { properties, propertyImages } from "@/lib/db/schema";
+import { properties } from "@/lib/db/schema";
 import { desc, eq, and, gte, lte, ilike } from "drizzle-orm";
 import { PropertyCard } from "@/components/properties/PropertyCard";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,10 @@ export default async function PropertiesPage({
   const offset = (page - 1) * limit;
 
   // Build filters
-  const filters = [eq(properties.isAvailable, true)];
+  const filters = [
+    eq(properties.isAvailable, true),
+    eq(properties.status, "approved")
+  ];
 
   if (params.city) {
     filters.push(ilike(properties.city, `%${params.city}%`));

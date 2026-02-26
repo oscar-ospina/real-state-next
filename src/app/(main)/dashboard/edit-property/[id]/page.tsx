@@ -22,9 +22,13 @@ export default async function EditPropertyPage({
     redirect("/login");
   }
 
-  // Obtener la propiedad
+  // Obtener la propiedad con media y documentos
   const property = await db.query.properties.findFirst({
     where: eq(properties.id, id),
+    with: {
+      images: { orderBy: (images, { asc }) => [asc(images.order)] },
+      documents: true,
+    },
   });
 
   if (!property) {
@@ -55,7 +59,29 @@ export default async function EditPropertyPage({
     areaSqm: property.areaSqm,
     isFurnished: property.isFurnished,
     isAvailable: property.isAvailable,
+    publisherRole: property.publisherRole,
+    isNegotiable: property.isNegotiable,
+    minPrice: property.minPrice,
+    isHorizontalProperty: property.isHorizontalProperty,
+    status: property.status,
   };
+
+  const initialMedia = property.images.map((img) => ({
+    id: img.id,
+    url: img.url,
+    mediaType: (img.mediaType || "image") as "image" | "video",
+    mimeType: img.mimeType || "image/jpeg",
+    sizeBytes: img.sizeBytes || 0,
+    isPrimary: img.isPrimary,
+    order: img.order,
+  }));
+
+  const initialDocuments = property.documents.map((doc) => ({
+    documentType: doc.documentType,
+    url: doc.url,
+    fileName: doc.fileName,
+    sizeBytes: doc.sizeBytes ?? undefined,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,7 +115,12 @@ export default async function EditPropertyPage({
             </p>
           </div>
 
-          <PropertyForm initialData={initialData} mode="edit" />
+          <PropertyForm
+            initialData={initialData}
+            initialMedia={initialMedia}
+            initialDocuments={initialDocuments}
+            mode="edit"
+          />
         </div>
       </main>
     </div>

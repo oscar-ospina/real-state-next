@@ -8,7 +8,7 @@ interface ContractData {
   lease: Lease;
 }
 
-export function generateLeaseContract(data: ContractData): string {
+export function generateCommercialLeaseContract(data: ContractData): string {
   const { property, landlord, tenant, tenantProfile, lease } = data;
 
   const formatCurrency = (amount: string | number) => {
@@ -37,8 +37,8 @@ export function generateLeaseContract(data: ContractData): string {
   return `
     <div class="contract-container" style="font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.8;">
       <header style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #333; padding-bottom: 20px;">
-        <h1 style="font-size: 24px; margin-bottom: 10px;">CONTRATO DE ARRENDAMIENTO DE VIVIENDA URBANA</h1>
-        <p style="color: #666;">Ley 820 de 2003 - Colombia</p>
+        <h1 style="font-size: 24px; margin-bottom: 10px;">CONTRATO DE ARRENDAMIENTO DE LOCAL COMERCIAL</h1>
+        <p style="color: #666;">Codigo de Comercio - Colombia</p>
       </header>
 
       <section style="margin-bottom: 30px;">
@@ -62,42 +62,71 @@ export function generateLeaseContract(data: ContractData): string {
 
       <section style="margin-bottom: 30px;">
         <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">OBJETO DEL CONTRATO</h2>
-        <p>El ARRENDADOR da en arrendamiento al ARRENDATARIO el siguiente inmueble:</p>
+        <p>El ARRENDADOR da en arrendamiento al ARRENDATARIO el siguiente inmueble de uso comercial:</p>
         <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 15px 0;">
           <p><strong>Inmueble:</strong> ${property.title}</p>
           <p><strong>Direccion:</strong> ${property.address}</p>
           <p><strong>Ciudad:</strong> ${property.city}${property.neighborhood ? `, ${property.neighborhood}` : ""}</p>
-          <p><strong>Tipo:</strong> ${property.propertyType}</p>
-          <p><strong>Caracteristicas:</strong> ${property.bedrooms} habitaciones, ${property.bathrooms} banos${property.areaSqm ? `, ${property.areaSqm} m2` : ""}</p>
-          <p><strong>Amoblado:</strong> ${property.isFurnished ? "Si" : "No"}</p>
+          <p><strong>Tipo:</strong> Local Comercial</p>
+          <p><strong>Area:</strong> ${property.areaSqm ? `${property.areaSqm} m²` : "No especificada"}</p>
         </div>
+      </section>
+
+      <section style="margin-bottom: 30px;">
+        <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">USO DEL INMUEBLE</h2>
+        <p>El inmueble arrendado se destinara exclusivamente para uso comercial, especificamente para el desarrollo de la actividad comercial indicada por el ARRENDATARIO: <strong>${tenantProfile.occupation}</strong>.</p>
+        <p>El ARRENDATARIO no podra cambiar el uso del inmueble sin previa autorizacion escrita del ARRENDADOR.</p>
       </section>
 
       <section style="margin-bottom: 30px;">
         <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">CONDICIONES ECONOMICAS</h2>
         <p><strong>Canon de arrendamiento mensual:</strong> ${formatCurrency(lease.monthlyRent)}</p>
         ${lease.initialFeeAmount ? `<p><strong>Valor inicial:</strong> ${formatCurrency(lease.initialFeeAmount)}</p>` : ""}
-        ${lease.initialFeeAmount ? `<p style="font-size: 14px; color: #666; font-style: italic;">Conforme al Articulo 16 de la Ley 820 de 2003, el valor inicial no podra exceder el monto equivalente a un mes de canon de arrendamiento.</p>` : ""}
-        <p>El pago del canon se realizara dentro de los primeros cinco (5) dias de cada mes.</p>
+        <p>El pago del canon se realizara dentro de los primeros cinco (5) dias de cada mes mediante transferencia bancaria o el metodo acordado por las partes.</p>
+        <p style="font-size: 14px; color: #666; font-style: italic; margin-top: 10px;">El canon de arrendamiento sera reajustado anualmente de acuerdo con el IPC certificado por el DANE.</p>
       </section>
 
       <section style="margin-bottom: 30px;">
         <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">DURACION</h2>
         <p><strong>Fecha de inicio:</strong> ${formatDate(lease.startDate)}</p>
         <p><strong>Fecha de finalizacion:</strong> ${formatDate(lease.endDate)}</p>
-        <p>El contrato tendra una duracion inicial de doce (12) meses, renovable automaticamente por periodos iguales.</p>
+        <p>El contrato tendra una duracion inicial de doce (12) meses, renovable automaticamente por periodos iguales, salvo manifestacion en contrario de cualquiera de las partes con una antelacion minima de tres (3) meses.</p>
       </section>
 
       <section style="margin-bottom: 30px;">
-        <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">CLAUSULAS GENERALES</h2>
+        <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">OBLIGACIONES DEL ARRENDATARIO</h2>
         <ol style="padding-left: 20px;">
-          <li style="margin-bottom: 10px;">El arrendatario se compromete a usar el inmueble exclusivamente para vivienda.</li>
-          <li style="margin-bottom: 10px;">Queda prohibido el subarriendo total o parcial del inmueble.</li>
-          <li style="margin-bottom: 10px;">El arrendatario se obliga a mantener el inmueble en buen estado.</li>
-          <li style="margin-bottom: 10px;">Los servicios publicos estaran a cargo del arrendatario.</li>
-          <li style="margin-bottom: 10px;">El arrendador podra realizar visitas previo aviso de 24 horas.</li>
-          <li style="margin-bottom: 10px;">Para la terminacion anticipada se requiere preaviso de tres (3) meses.</li>
+          <li style="margin-bottom: 10px;">Pagar puntualmente el canon de arrendamiento y los servicios publicos.</li>
+          <li style="margin-bottom: 10px;">Destinar el inmueble unicamente al uso comercial autorizado.</li>
+          <li style="margin-bottom: 10px;">Mantener el inmueble en buen estado de conservacion.</li>
+          <li style="margin-bottom: 10px;">Realizar las reparaciones locativas necesarias.</li>
+          <li style="margin-bottom: 10px;">Permitir al arrendador realizar inspecciones previo aviso de 48 horas.</li>
+          <li style="margin-bottom: 10px;">No subarrendar ni ceder el contrato sin autorizacion escrita del arrendador.</li>
+          <li style="margin-bottom: 10px;">Cumplir con todas las normas municipales y sanitarias aplicables a su actividad comercial.</li>
+          <li style="margin-bottom: 10px;">Obtener y mantener vigentes todos los permisos y licencias necesarios para su actividad.</li>
         </ol>
+      </section>
+
+      <section style="margin-bottom: 30px;">
+        <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">OBLIGACIONES DEL ARRENDADOR</h2>
+        <ol style="padding-left: 20px;">
+          <li style="margin-bottom: 10px;">Entregar el inmueble en condiciones aptas para el uso comercial pactado.</li>
+          <li style="margin-bottom: 10px;">Realizar las reparaciones estructurales necesarias.</li>
+          <li style="margin-bottom: 10px;">Respetar el uso pacifico del inmueble por parte del arrendatario.</li>
+          <li style="margin-bottom: 10px;">Garantizar que el inmueble cuenta con los servicios publicos basicos.</li>
+        </ol>
+      </section>
+
+      <section style="margin-bottom: 30px;">
+        <h2 style="font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">TERMINACION DEL CONTRATO</h2>
+        <p>El contrato podra terminarse por las siguientes causales:</p>
+        <ol style="padding-left: 20px;">
+          <li style="margin-bottom: 10px;">Por mutuo acuerdo de las partes.</li>
+          <li style="margin-bottom: 10px;">Por vencimiento del termino pactado sin renovacion.</li>
+          <li style="margin-bottom: 10px;">Por incumplimiento de cualquiera de las obligaciones contractuales.</li>
+          <li style="margin-bottom: 10px;">Por falta de pago del canon de arrendamiento por dos (2) meses consecutivos.</li>
+        </ol>
+        <p style="margin-top: 10px;">Para la terminacion anticipada, la parte interesada debera notificar a la otra con una antelacion minima de tres (3) meses.</p>
       </section>
 
       <section style="margin-bottom: 30px;">

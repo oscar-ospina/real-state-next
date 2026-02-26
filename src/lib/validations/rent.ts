@@ -3,6 +3,7 @@ import { z } from "zod";
 // Schema para crear un nuevo lease
 export const createLeaseSchema = z.object({
   propertyId: z.string().uuid("ID de propiedad invalido"),
+  proposedRent: z.string().optional(),
 });
 
 // Schema para verificacion del tenant (paso 2)

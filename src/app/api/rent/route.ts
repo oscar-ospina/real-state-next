@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
     if (property.ownerId === session.user.id) {
       return NextResponse.json(
-        { error: "No puedes arrendar tu propia propiedad" },
+        { error: "No puedes contratar tu propia propiedad" },
         { status: 400 }
       );
     }
@@ -76,15 +76,41 @@ export async function POST(req: Request) {
       );
     }
 
+    // Manejar precio propuesto si la propiedad es negociable
+    let finalRent = property.price;
+    let proposedRentValue = null;
+
+    if (parsed.data.proposedRent && property.isNegotiable) {
+      const proposedAmount = parsed.data.proposedRent;
+      const minPrice = property.minPrice || property.price;
+
+      // Validar que el precio propuesto sea >= minPrice
+      if (Number(proposedAmount) < Number(minPrice)) {
+        return NextResponse.json(
+          {
+            error: `El precio propuesto debe ser al menos ${new Intl.NumberFormat(
+              "es-CO",
+              { style: "currency", currency: property.currency }
+            ).format(Number(minPrice))}`,
+          },
+          { status: 400 }
+        );
+      }
+
+      proposedRentValue = proposedAmount;
+      // El monthlyRent sigue siendo el precio de la propiedad hasta que el landlord apruebe
+    }
+
     const [newLease] = await db
       .insert(leases)
       .values({
         propertyId: property.id,
         tenantId: session.user.id,
         landlordId: property.ownerId,
-        monthlyRent: property.price,
+        monthlyRent: finalRent,
         currency: property.currency,
-        depositAmount: property.price,
+        initialFeeAmount: finalRent,
+        proposedRent: proposedRentValue,
         status: "draft",
         currentStep: 1,
       })

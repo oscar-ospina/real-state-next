@@ -37,7 +37,7 @@ export function RentButton({
         variant="secondary"
         onClick={() => router.push("/login")}
       >
-        Inicia sesion para arrendar
+        Inicia sesion para contratar
       </Button>
     );
   }
@@ -86,7 +86,7 @@ export function RentButton({
         onClick={handleRent}
         disabled={!isAvailable || loading}
       >
-        {loading ? "Iniciando..." : "Arrendar"}
+        {loading ? "Iniciando..." : "Contratar"}
       </Button>
       {!isAvailable && (
         <p className="text-xs text-center text-gray-500">

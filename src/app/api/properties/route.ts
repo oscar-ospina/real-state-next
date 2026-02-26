@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { properties, propertyImages } from "@/lib/db/schema";
+import { properties } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 const createPropertySchema = z.object({
@@ -19,10 +20,16 @@ const createPropertySchema = z.object({
   bathrooms: z.number().min(1),
   areaSqm: z.string().optional(),
   isFurnished: z.boolean().default(false),
+  publisherRole: z.enum(["owner", "mandatario"]).default("owner"),
+  isNegotiable: z.boolean().default(false),
+  minPrice: z.string().optional(),
+  isHorizontalProperty: z.boolean().default(false),
 });
 
 export async function GET() {
+  // Solo mostrar propiedades aprobadas al publico
   const allProperties = await db.query.properties.findMany({
+    where: eq(properties.status, "approved"),
     with: {
       images: true,
       owner: {
@@ -63,11 +70,19 @@ export async function POST(req: Request) {
       );
     }
 
+    // Auto-determine contract type based on property type
+    const contractType =
+      parsed.data.propertyType === "commercial"
+        ? "comercial"
+        : "vivienda_urbana";
+
     const [newProperty] = await db
       .insert(properties)
       .values({
         ...parsed.data,
         ownerId: session.user.id,
+        status: "draft",
+        contractType,
       })
       .returning();
 

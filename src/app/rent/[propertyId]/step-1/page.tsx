@@ -49,7 +49,7 @@ export default async function Step1Page({ params, searchParams }: Step1PageProps
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold">Proceso de Arrendamiento</h1>
         <p className="text-gray-500 mt-2">
-          Estas a punto de iniciar el proceso para arrendar este inmueble
+          Estas a punto de iniciar el proceso para contratar este inmueble
         </p>
       </div>
 
@@ -57,7 +57,7 @@ export default async function Step1Page({ params, searchParams }: Step1PageProps
         property={lease.property}
         monthlyRent={lease.monthlyRent}
         currency={lease.currency}
-        depositAmount={lease.depositAmount}
+        initialFeeAmount={lease.initialFeeAmount}
       />
 
       <Card>

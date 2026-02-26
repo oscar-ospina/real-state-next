@@ -46,6 +46,29 @@ export const paymentMethodEnum = pgEnum("payment_method", [
   "bancolombia",
   "cash",
 ]);
+export const mediaTypeEnum = pgEnum("media_type", ["image", "video"]);
+export const propertyDocumentTypeEnum = pgEnum("property_document_type", [
+  "escritura_publica",
+  "certificado_tradicion",
+  "contrato_mandato",
+  "reglamento_propiedad_horizontal",
+  "paz_y_salvo_admin",
+]);
+export const userDocumentTypeEnum = pgEnum("user_document_type", [
+  "cedula_front",
+  "cedula_back",
+]);
+export const publisherRoleEnum = pgEnum("publisher_role", ["owner", "mandatario"]);
+export const propertyStatusEnum = pgEnum("property_status", [
+  "draft",
+  "pending_review",
+  "approved",
+  "rejected",
+]);
+export const contractTypeEnum = pgEnum("contract_type", [
+  "vivienda_urbana",
+  "comercial",
+]);
 
 // Users table
 export const users = pgTable("users", {
@@ -81,6 +104,13 @@ export const properties = pgTable("properties", {
   areaSqm: decimal("area_sqm", { precision: 8, scale: 2 }),
   isFurnished: boolean("is_furnished").notNull().default(false),
   isAvailable: boolean("is_available").notNull().default(true),
+  publisherRole: publisherRoleEnum("publisher_role").notNull().default("owner"),
+  status: propertyStatusEnum("status").notNull().default("draft"),
+  rejectionReason: text("rejection_reason"),
+  isNegotiable: boolean("is_negotiable").notNull().default(false),
+  minPrice: decimal("min_price", { precision: 12, scale: 2 }),
+  isHorizontalProperty: boolean("is_horizontal_property").notNull().default(false),
+  contractType: contractTypeEnum("contract_type").notNull().default("vivienda_urbana"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -94,6 +124,9 @@ export const propertyImages = pgTable("property_images", {
   url: varchar("url", { length: 500 }).notNull(),
   isPrimary: boolean("is_primary").notNull().default(false),
   order: integer("order").notNull().default(0),
+  mediaType: mediaTypeEnum("media_type").notNull().default("image"),
+  mimeType: varchar("mime_type", { length: 50 }),
+  sizeBytes: integer("size_bytes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -130,7 +163,8 @@ export const leases = pgTable("leases", {
     .references(() => users.id, { onDelete: "cascade" }),
   monthlyRent: decimal("monthly_rent", { precision: 12, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).notNull().default("COP"),
-  depositAmount: decimal("deposit_amount", { precision: 12, scale: 2 }),
+  initialFeeAmount: decimal("initial_fee_amount", { precision: 12, scale: 2 }),
+  proposedRent: decimal("proposed_rent", { precision: 12, scale: 2 }),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
   status: leaseStatusEnum("status").notNull().default("draft"),
@@ -217,10 +251,37 @@ export const webhookEvents = pgTable("webhook_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Property documents table (verification docs)
+export const propertyDocuments = pgTable("property_documents", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  propertyId: uuid("property_id")
+    .notNull()
+    .references(() => properties.id, { onDelete: "cascade" }),
+  documentType: propertyDocumentTypeEnum("document_type").notNull(),
+  url: varchar("url", { length: 500 }).notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  sizeBytes: integer("size_bytes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User documents table (identity docs)
+export const userDocuments = pgTable("user_documents", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  documentType: userDocumentTypeEnum("document_type").notNull(),
+  url: varchar("url", { length: 500 }).notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  sizeBytes: integer("size_bytes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   properties: many(properties),
   tenantProfile: one(tenantProfiles),
+  documents: many(userDocuments),
   leasesAsTenant: many(leases, { relationName: "tenant" }),
   leasesAsLandlord: many(leases, { relationName: "landlord" }),
 }));
@@ -231,6 +292,7 @@ export const propertiesRelations = relations(properties, ({ one, many }) => ({
     references: [users.id],
   }),
   images: many(propertyImages),
+  documents: many(propertyDocuments),
   leases: many(leases),
 }));
 
@@ -310,6 +372,20 @@ export const webhookEventsRelations = relations(webhookEvents, ({ one }) => ({
   }),
 }));
 
+export const propertyDocumentsRelations = relations(propertyDocuments, ({ one }) => ({
+  property: one(properties, {
+    fields: [propertyDocuments.propertyId],
+    references: [properties.id],
+  }),
+}));
+
+export const userDocumentsRelations = relations(userDocuments, ({ one }) => ({
+  user: one(users, {
+    fields: [userDocuments.userId],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -329,3 +405,7 @@ export type LeaseApprovalFee = typeof leaseApprovalFees.$inferSelect;
 export type NewLeaseApprovalFee = typeof leaseApprovalFees.$inferInsert;
 export type WebhookEvent = typeof webhookEvents.$inferSelect;
 export type NewWebhookEvent = typeof webhookEvents.$inferInsert;
+export type PropertyDocument = typeof propertyDocuments.$inferSelect;
+export type NewPropertyDocument = typeof propertyDocuments.$inferInsert;
+export type UserDocument = typeof userDocuments.$inferSelect;
+export type NewUserDocument = typeof userDocuments.$inferInsert;

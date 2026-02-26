@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { leases, tenantProfiles } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateLeaseContract } from "@/lib/templates/lease-contract";
+import { generateCommercialLeaseContract } from "@/lib/templates/commercial-lease-contract";
 
 export async function GET(
   req: Request,
@@ -68,13 +69,23 @@ export async function GET(
       );
     }
 
-    const contractHtml = generateLeaseContract({
-      property: lease.property,
-      landlord: lease.landlord,
-      tenant: lease.tenant,
-      tenantProfile,
-      lease,
-    });
+    // Seleccionar template segun tipo de contrato
+    const contractHtml =
+      lease.property.contractType === "comercial"
+        ? generateCommercialLeaseContract({
+            property: lease.property,
+            landlord: lease.landlord,
+            tenant: lease.tenant,
+            tenantProfile,
+            lease,
+          })
+        : generateLeaseContract({
+            property: lease.property,
+            landlord: lease.landlord,
+            tenant: lease.tenant,
+            tenantProfile,
+            lease,
+          });
 
     return NextResponse.json({ contractHtml });
   } catch (error) {
@@ -152,14 +163,23 @@ export async function POST(
       );
     }
 
-    // Generar y guardar el contrato
-    const contractHtml = generateLeaseContract({
-      property: lease.property,
-      landlord: lease.landlord,
-      tenant: lease.tenant,
-      tenantProfile,
-      lease,
-    });
+    // Generar y guardar el contrato (seleccionar template segun tipo)
+    const contractHtml =
+      lease.property.contractType === "comercial"
+        ? generateCommercialLeaseContract({
+            property: lease.property,
+            landlord: lease.landlord,
+            tenant: lease.tenant,
+            tenantProfile,
+            lease,
+          })
+        : generateLeaseContract({
+            property: lease.property,
+            landlord: lease.landlord,
+            tenant: lease.tenant,
+            tenantProfile,
+            lease,
+          });
 
     // Avanzar al paso 4 y guardar contrato
     const [updatedLease] = await db

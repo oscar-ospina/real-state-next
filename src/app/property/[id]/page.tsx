@@ -86,8 +86,14 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     }).format(Number(price));
   };
 
+  const imageMedia = property.images.filter(
+    (img) => !img.mediaType || img.mediaType === "image"
+  );
+  const videoMedia = property.images.filter(
+    (img) => img.mediaType === "video"
+  );
   const primaryImage =
-    property.images.find((img) => img.isPrimary) || property.images[0];
+    imageMedia.find((img) => img.isPrimary) || imageMedia[0];
 
   // Variables para RentButton
   const isAuthenticated = !!session?.user;
@@ -195,19 +201,54 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   {property.images.map((image, index) => (
                     <div
                       key={image.id}
-                      className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${
+                      className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 relative ${
                         image.id === primaryImage?.id
                           ? "border-blue-500"
                           : "border-transparent"
                       }`}
                     >
-                      <img
-                        src={image.url}
-                        alt={`${property.title} - foto ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      {image.mediaType === "video" ? (
+                        <>
+                          <video
+                            src={image.url}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        </>
+                      ) : (
+                        <img
+                          src={image.url}
+                          alt={`${property.title} - foto ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Video gallery */}
+              {videoMedia.length > 0 && (
+                <div className="p-4 space-y-3 border-t">
+                  <h3 className="text-sm font-semibold text-gray-700">Videos</h3>
+                  <div className="grid gap-3">
+                    {videoMedia.map((video) => (
+                      <video
+                        key={video.id}
+                        src={video.url}
+                        controls
+                        className="w-full rounded-lg max-h-96"
+                        preload="metadata"
+                      >
+                        Tu navegador no soporta la reproduccion de video.
+                      </video>
+                    ))}
+                  </div>
                 </div>
               )}
             </Card>
@@ -284,6 +325,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   <p className="text-3xl font-bold text-blue-600">
                     {formatPrice(property.price)}
                   </p>
+                  {property.isNegotiable && (
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">
+                      Precio negociable
+                    </span>
+                  )}
                 </div>
 
                 <ContactSection

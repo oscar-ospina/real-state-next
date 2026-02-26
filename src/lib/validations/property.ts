@@ -15,6 +15,10 @@ export const propertyFormSchema = z.object({
   bathrooms: z.number().min(1, "Minimo 1 bano"),
   areaSqm: z.string().optional(),
   isFurnished: z.boolean().default(false),
+  publisherRole: z.enum(["owner", "mandatario"]).default("owner"),
+  isNegotiable: z.boolean().default(false),
+  minPrice: z.string().optional(),
+  isHorizontalProperty: z.boolean().default(false),
 });
 
 export type PropertyFormData = z.infer<typeof propertyFormSchema>;

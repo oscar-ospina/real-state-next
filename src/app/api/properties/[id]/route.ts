@@ -19,6 +19,10 @@ const updatePropertySchema = z.object({
   areaSqm: z.string().optional(),
   isFurnished: z.boolean().default(false),
   isAvailable: z.boolean().default(true),
+  publisherRole: z.enum(["owner", "mandatario"]).default("owner"),
+  isNegotiable: z.boolean().default(false),
+  minPrice: z.string().optional(),
+  isHorizontalProperty: z.boolean().default(false),
 });
 
 // GET - Obtener una propiedad por ID
@@ -27,12 +31,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const session = await auth();
 
   try {
     const property = await db.query.properties.findFirst({
       where: eq(properties.id, id),
       with: {
         images: true,
+        documents: true,
         owner: {
           columns: {
             id: true,
@@ -44,6 +50,18 @@ export async function GET(
     });
 
     if (!property) {
+      return NextResponse.json(
+        { error: "Propiedad no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    // Solo mostrar propiedades aprobadas al publico
+    // Owner y admin pueden ver propiedades en cualquier estado
+    const isOwner = property.ownerId === session?.user?.id;
+    const isAdmin = session?.user?.roles?.includes("admin");
+
+    if (property.status !== "approved" && !isOwner && !isAdmin) {
       return NextResponse.json(
         { error: "Propiedad no encontrada" },
         { status: 404 }

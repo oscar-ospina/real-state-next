@@ -19,14 +19,14 @@ interface PropertySummaryProps {
   };
   monthlyRent: string;
   currency: string;
-  depositAmount: string | null;
+  initialFeeAmount: string | null;
 }
 
 export function PropertySummary({
   property,
   monthlyRent,
   currency,
-  depositAmount,
+  initialFeeAmount,
 }: PropertySummaryProps) {
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat("es-CO", {
@@ -100,10 +100,10 @@ export function PropertySummary({
               {formatPrice(monthlyRent)}
             </span>
           </div>
-          {depositAmount && (
+          {initialFeeAmount && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Deposito:</span>
-              <span className="font-semibold">{formatPrice(depositAmount)}</span>
+              <span className="text-gray-600">Valor inicial:</span>
+              <span className="font-semibold">{formatPrice(initialFeeAmount)}</span>
             </div>
           )}
         </div>

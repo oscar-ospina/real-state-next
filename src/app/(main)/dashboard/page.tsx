@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/layout/Header";
 import { LeaseRequestCard } from "@/components/rent/LeaseRequestCard";
 import { MyLeaseCard } from "@/components/rent/MyLeaseCard";
+import { SubmitForReviewButton } from "@/components/properties/SubmitForReviewButton";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -201,31 +202,62 @@ export default async function DashboardPage() {
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userProperties.map((property) => (
-                  <Card key={property.id}>
-                    <div className="h-40 bg-gray-200">
-                      {property.images[0] && (
-                        <img
-                          src={property.images[0].url}
-                          alt={property.title}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold">{property.title}</h3>
-                      <p className="text-sm text-gray-500">{property.city}</p>
-                      <div className="flex gap-2 mt-3">
-                        <Link href={`/dashboard/edit-property/${property.id}`}>
-                          <Button size="sm" variant="outline">Editar</Button>
-                        </Link>
-                        <Link href={`/property/${property.id}`}>
-                          <Button size="sm" variant="ghost">Ver</Button>
-                        </Link>
+                {userProperties.map((property) => {
+                  const statusLabels: Record<string, { label: string; color: string }> = {
+                    draft: { label: "Borrador", color: "bg-gray-100 text-gray-700" },
+                    pending_review: { label: "En Revision", color: "bg-amber-100 text-amber-700" },
+                    approved: { label: "Aprobada", color: "bg-green-100 text-green-700" },
+                    rejected: { label: "Rechazada", color: "bg-red-100 text-red-700" },
+                  };
+
+                  const statusInfo = statusLabels[property.status] || statusLabels.draft;
+
+                  return (
+                    <Card key={property.id} className="relative">
+                      <div className="h-40 bg-gray-200 relative">
+                        {property.images[0] && (
+                          <img
+                            src={property.images[0].url}
+                            alt={property.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        <div className="absolute top-2 right-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${statusInfo.color}`}>
+                            {statusInfo.label}
+                          </span>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold">{property.title}</h3>
+                          <p className="text-sm text-gray-500">{property.city}</p>
+                        </div>
+
+                        {property.status === "rejected" && property.rejectionReason && (
+                          <div className="bg-red-50 border border-red-200 p-2 rounded">
+                            <p className="text-xs text-red-700 font-medium mb-1">Motivo de rechazo:</p>
+                            <p className="text-xs text-red-600">{property.rejectionReason}</p>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 flex-wrap">
+                          <Link href={`/dashboard/edit-property/${property.id}`}>
+                            <Button size="sm" variant="outline">Editar</Button>
+                          </Link>
+                          {property.status === "approved" && (
+                            <Link href={`/property/${property.id}`}>
+                              <Button size="sm" variant="ghost">Ver</Button>
+                            </Link>
+                          )}
+                          {(property.status === "draft" || property.status === "rejected") && (
+                            <SubmitForReviewButton propertyId={property.id} />
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>

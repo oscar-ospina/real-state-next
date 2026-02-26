@@ -46,7 +46,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             <span>{property.bathrooms} baño{property.bathrooms > 1 ? "s" : ""}</span>
             {property.areaSqm && <span>{property.areaSqm} m²</span>}
           </div>
-          <div className="mt-2">
+          <div className="mt-2 flex gap-2 flex-wrap">
             <span className={`text-xs px-2 py-1 rounded font-medium transition-colors duration-200 ${
               property.isAvailable
                 ? "bg-green-100 text-green-700 group-hover:bg-green-200"
@@ -54,6 +54,11 @@ export function PropertyCard({ property }: PropertyCardProps) {
             }`}>
               {property.isAvailable ? "Disponible" : "No disponible"}
             </span>
+            {property.isNegotiable && (
+              <span className="text-xs px-2 py-1 rounded font-medium bg-amber-100 text-amber-700 transition-colors duration-200 group-hover:bg-amber-200">
+                Negociable
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
