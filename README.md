@@ -49,6 +49,8 @@ npm run dev
 
 Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 
+> Nota: entorno de desarrollo validado en WSL con Docker + PostgreSQL en `localhost:5433`.
+
 ## Scripts Disponibles
 
 | Comando | Descripción |
