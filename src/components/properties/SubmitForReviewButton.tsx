@@ -28,7 +28,9 @@ export function SubmitForReviewButton({ propertyId }: SubmitForReviewButtonProps
 
       if (!res.ok) {
         const data = await res.json();
-        if (data.missingDocuments) {
+        if (data.missingRequirements?.length) {
+          alert(`Faltan requisitos para enviar a revisión:\n- ${data.missingRequirements.join("\n- ")}`);
+        } else if (data.missingDocuments) {
           alert(`Faltan documentos requeridos:\n- ${data.missingDocuments.join("\n- ")}`);
         } else {
           alert(data.error || "Error al enviar");

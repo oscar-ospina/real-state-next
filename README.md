@@ -106,6 +106,11 @@ Los componentes incluyen estados interactivos mejorados:
 - **Cards**: Transiciones suaves, efecto de elevación en hover
 - **PropertyCard**: Imagen con zoom, título con color en hover, badge animado
 
+## Documentación de producto
+
+- `ROADMAP.md` — roadmap de producto base
+- `docs/technical-backlog.md` — backlog técnico aterrizado al estado actual del repo
+
 ## Licencia
 
 MIT

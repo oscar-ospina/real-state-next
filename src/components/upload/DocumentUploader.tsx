@@ -7,6 +7,10 @@ import {
   ALLOWED_DOCUMENT_TYPES,
   MAX_DOCUMENT_SIZE,
 } from "@/lib/services/upload-constants";
+import {
+  formatDocumentLabel,
+  getRequiredPropertyDocuments,
+} from "@/lib/properties/review-requirements";
 
 interface DocumentRequirement {
   type: string;
@@ -31,44 +35,16 @@ interface DocumentUploaderProps {
   className?: string;
 }
 
-const BASE_REQUIREMENTS: DocumentRequirement[] = [
-  {
-    type: "escritura_publica",
-    label: "Escritura Publica",
-    description: "Documento que acredita la propiedad del inmueble",
-    required: true,
-  },
-  {
-    type: "certificado_tradicion",
-    label: "Certificado de Tradicion y Libertad",
-    description: "Documento expedido por la Oficina de Registro",
-    required: true,
-  },
-];
-
-const MANDATARIO_REQUIREMENTS: DocumentRequirement[] = [
-  {
-    type: "contrato_mandato",
-    label: "Contrato de Mandato",
-    description: "Contrato que autoriza al mandatario a administrar el inmueble",
-    required: true,
-  },
-];
-
-const HORIZONTAL_PROPERTY_REQUIREMENTS: DocumentRequirement[] = [
-  {
-    type: "reglamento_propiedad_horizontal",
-    label: "Reglamento de Propiedad Horizontal",
-    description: "Copia del reglamento de la copropiedad",
-    required: true,
-  },
-  {
-    type: "paz_y_salvo_admin",
-    label: "Paz y Salvo de Administracion",
-    description: "Certificado de estar al dia con la administracion",
-    required: true,
-  },
-];
+const DOCUMENT_DESCRIPTIONS: Record<string, string> = {
+  escritura_publica: "Documento que acredita la propiedad del inmueble.",
+  certificado_tradicion: "Documento expedido por la Oficina de Registro.",
+  contrato_mandato:
+    "Contrato que autoriza al mandatario a administrar el inmueble.",
+  reglamento_propiedad_horizontal:
+    "Copia del reglamento de la copropiedad.",
+  paz_y_salvo_admin:
+    "Certificado de estar al día con la administración.",
+};
 
 export function DocumentUploader({
   publisherRole,
@@ -78,11 +54,15 @@ export function DocumentUploader({
   onDocumentUploaded,
   className,
 }: DocumentUploaderProps) {
-  const requirements = [
-    ...BASE_REQUIREMENTS,
-    ...(publisherRole === "mandatario" ? MANDATARIO_REQUIREMENTS : []),
-    ...(isHorizontalProperty ? HORIZONTAL_PROPERTY_REQUIREMENTS : []),
-  ];
+  const requirements: DocumentRequirement[] = getRequiredPropertyDocuments({
+    publisherRole,
+    isHorizontalProperty,
+  }).map((type) => ({
+    type,
+    label: formatDocumentLabel(type),
+    description: DOCUMENT_DESCRIPTIONS[type],
+    required: true,
+  }));
 
   const isDocUploaded = (docType: string) =>
     uploadedDocuments.some((d) => d.documentType === docType);

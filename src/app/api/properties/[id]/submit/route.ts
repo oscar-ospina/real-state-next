@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { properties } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import {
+  formatDocumentLabel,
+  getPropertyReviewReadiness,
+} from "@/lib/properties/review-requirements";
 
 export async function POST(
   req: Request,
@@ -21,6 +25,7 @@ export async function POST(
       where: eq(properties.id, id),
       with: {
         documents: true,
+        images: true,
       },
     });
 
@@ -47,27 +52,23 @@ export async function POST(
       );
     }
 
-    // Validar documentos requeridos
-    const requiredDocs: string[] = ["escritura_publica", "certificado_tradicion"];
+    const reviewReadiness = getPropertyReviewReadiness({
+      publisherRole: property.publisherRole,
+      isHorizontalProperty: property.isHorizontalProperty,
+      uploadedDocumentTypes: property.documents.map((d) => d.documentType),
+      mediaTypes: property.images.map((image) => image.mediaType ?? "image"),
+    });
 
-    if (property.publisherRole === "mandatario") {
-      requiredDocs.push("contrato_mandato");
-    }
-
-    if (property.isHorizontalProperty) {
-      requiredDocs.push("reglamento_propiedad_horizontal", "paz_y_salvo_admin");
-    }
-
-    const uploadedDocs = property.documents.map((d) => d.documentType as string);
-    const missingDocs = requiredDocs.filter(
-      (doc) => !uploadedDocs.includes(doc)
-    );
-
-    if (missingDocs.length > 0) {
+    if (reviewReadiness.missingDocuments.length > 0 || !reviewReadiness.hasMinimumMedia) {
       return NextResponse.json(
         {
-          error: "Faltan documentos requeridos",
-          missingDocuments: missingDocs,
+          error: "La propiedad no esta lista para revision",
+          missingDocuments: reviewReadiness.missingDocuments,
+          missingDocumentLabels: reviewReadiness.missingDocuments.map(formatDocumentLabel),
+          missingRequirements: [
+            ...reviewReadiness.missingDocuments.map(formatDocumentLabel),
+            ...(!reviewReadiness.hasMinimumMedia ? ["Al menos una imagen de la propiedad"] : []),
+          ],
         },
         { status: 400 }
       );

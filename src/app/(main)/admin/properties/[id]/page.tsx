@@ -8,6 +8,10 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { propertyTypeLabels } from "@/lib/validations/property";
 import { AdminPropertyActions } from "@/components/admin/AdminPropertyActions";
+import {
+  formatDocumentLabel,
+  getPropertyReviewReadiness,
+} from "@/lib/properties/review-requirements";
 
 interface AdminPropertyDetailPageProps {
   params: Promise<{ id: string }>;
@@ -50,13 +54,12 @@ export default async function AdminPropertyDetailPage({
   const primaryImage =
     property.images.find((img) => img.isPrimary) || property.images[0];
 
-  const documentLabels: Record<string, string> = {
-    escritura_publica: "Escritura Publica",
-    certificado_tradicion: "Certificado de Tradicion y Libertad",
-    contrato_mandato: "Contrato de Mandato",
-    reglamento_propiedad_horizontal: "Reglamento de Propiedad Horizontal",
-    paz_y_salvo_admin: "Paz y Salvo de Administracion",
-  };
+  const reviewReadiness = getPropertyReviewReadiness({
+    publisherRole: property.publisherRole,
+    isHorizontalProperty: property.isHorizontalProperty,
+    uploadedDocumentTypes: property.documents.map((doc) => doc.documentType),
+    mediaTypes: property.images.map((image) => image.mediaType ?? "image"),
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -211,10 +214,40 @@ export default async function AdminPropertyDetailPage({
               </CardContent>
             </Card>
 
+            {/* Review readiness */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Checklist de aprobación</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="rounded-lg border p-3 bg-gray-50">
+                  <ul className="space-y-2">
+                    <li className={reviewReadiness.hasMinimumMedia ? "text-green-700" : "text-amber-700"}>
+                      {reviewReadiness.hasMinimumMedia ? "✓" : "•"} Al menos una imagen de la propiedad
+                    </li>
+                    {reviewReadiness.requiredDocuments.map((docType) => {
+                      const exists = property.documents.some((doc) => doc.documentType === docType);
+
+                      return (
+                        <li key={docType} className={exists ? "text-green-700" : "text-amber-700"}>
+                          {exists ? "✓" : "•"} {formatDocumentLabel(docType)}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+                {!reviewReadiness.canSubmitForReview && (
+                  <p className="text-xs text-amber-700">
+                    Esta propiedad no debería aprobarse hasta completar todos los requisitos mínimos.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Documents */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Documentos de Verificacion</CardTitle>
+                <CardTitle className="text-base">Documentos de Verificación</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {property.documents.length === 0 ? (
@@ -231,7 +264,7 @@ export default async function AdminPropertyDetailPage({
                       <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                       </svg>
-                      <span className="flex-1">{documentLabels[doc.documentType] || doc.documentType}</span>
+                      <span className="flex-1">{formatDocumentLabel(doc.documentType)}</span>
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>

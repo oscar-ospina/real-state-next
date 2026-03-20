@@ -39,6 +39,9 @@ export function AdminPropertyActions({
 
       if (!res.ok) {
         const data = await res.json();
+        if (data.missingRequirements?.length) {
+          throw new Error(`Faltan requisitos para aprobar: ${data.missingRequirements.join(", ")}`);
+        }
         throw new Error(data.error || "Error al aprobar");
       }
 

@@ -30,6 +30,10 @@ import {
   MAX_IMAGE_SIZE,
   MAX_VIDEO_SIZE,
 } from "@/lib/services/upload-constants";
+import {
+  formatDocumentLabel,
+  getPropertyReviewReadiness,
+} from "@/lib/properties/review-requirements";
 
 interface UploadedDocument {
   documentType: string;
@@ -101,6 +105,13 @@ export function PropertyForm({
 
   const isEditMode = mode === "edit";
   const propertyId = initialData?.id;
+
+  const reviewReadiness = getPropertyReviewReadiness({
+    publisherRole,
+    isHorizontalProperty,
+    uploadedDocumentTypes: uploadedDocuments.map((doc) => doc.documentType),
+    mediaTypes: mediaItems.map((item) => item.mediaType),
+  });
 
   const handleMediaUploadComplete = async (
     url: string,
@@ -552,6 +563,44 @@ export function PropertyForm({
         </CardContent>
       </Card>
 
+      {/* Seccion: Checklist de revision (solo en modo edicion) */}
+      {isEditMode && propertyId && (
+        <Card className="border-blue-200 bg-blue-50/60 transition-all duration-200 hover:shadow-md">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Checklist para enviar a revisión</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="rounded-lg border border-blue-200 bg-white p-4">
+              <ul className="space-y-2">
+                <li className={reviewReadiness.hasMinimumMedia ? "text-green-700" : "text-amber-700"}>
+                  {reviewReadiness.hasMinimumMedia ? "✓" : "•"} Al menos una imagen de la propiedad
+                </li>
+                {reviewReadiness.requiredDocuments.map((docType) => {
+                  const isUploaded = uploadedDocuments.some(
+                    (doc) => doc.documentType === docType,
+                  );
+
+                  return (
+                    <li
+                      key={docType}
+                      className={isUploaded ? "text-green-700" : "text-amber-700"}
+                    >
+                      {isUploaded ? "✓" : "•"} {formatDocumentLabel(docType)}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {!reviewReadiness.canSubmitForReview && (
+              <p className="text-xs text-amber-700">
+                Completa todos los requisitos antes de enviar la propiedad a revisión.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Seccion: Fotos y Videos (solo en modo edicion) */}
       {isEditMode && propertyId && (
         <Card className="transition-all duration-200 hover:shadow-md">
@@ -560,8 +609,9 @@ export function PropertyForm({
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-500">
-              Sube fotos (JPG, PNG, WebP) y videos (MP4) de tu propiedad. La
-              primera imagen sera la principal.
+              Sube fotos (JPG, PNG, WebP) y videos (MP4) de tu propiedad. Debes
+              tener al menos una imagen para enviarla a revisión. La primera
+              imagen sera la principal.
             </p>
 
             <MediaGalleryEditor
@@ -596,7 +646,8 @@ export function PropertyForm({
           <CardContent>
             <p className="text-sm text-gray-500 mb-4">
               Estos documentos son necesarios para verificar la propiedad y
-              evitar fraudes. Tu publicacion quedara pendiente de aprobacion.
+              evitar fraudes. Debes completar todos los documentos obligatorios
+              según el rol del publicador antes de enviarla a revisión.
             </p>
 
             <DocumentUploader
